@@ -20,6 +20,7 @@ function compose_email() {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
 
   // Clear out composition fields
@@ -54,18 +55,44 @@ function list_email(email) {
   div.innerHTML = `<b>${email.sender}</b> ${email.subject}  <div style='float: right'>${email.timestamp}<div>`;
   back_color = email.read ? "lightgrey" : "white";
   div.style.cssText = `background: ${back_color}`;
-  div.addEventListener('click', open_email)
+  div.addEventListener('click', () => open_email(email));
   document.querySelector('#emails-view').append(div);
 }
 
-function open_email() {
-  return;
+function open_email(email) {
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#email-view').style.display = 'block';
+  document.querySelector('#compose-view').style.display = 'none';
+
+  fetch(`/emails/${email.id}`)
+  .then(response => response.json())
+  .then(email => {
+      // Print email
+      console.log(email);
+
+      // Mark as read
+      fetch(`/emails/${email.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            read: true,
+        })
+      })
+
+      // Populate divs with data
+      document.querySelector('#email-sender').innerHTML = email.sender;
+      document.querySelector('#email-recipients').innerHTML = email.recipients;
+      document.querySelector('#email-subject').innerHTML = email.subject;
+      document.querySelector('#email-timestamp').innerHTML = email.timestamp;
+      document.querySelector('#email-body').innerHTML = email.body;
+
+  });
 }
 
 function load_mailbox(mailbox) {
   
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
+  document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
 
   // Show the mailbox name
