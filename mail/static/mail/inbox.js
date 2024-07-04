@@ -49,17 +49,17 @@ function send_email() {
   });
 }
 
-function list_email(email) {
+function list_email(email, mailbox) {
   const div = document.createElement('div');
   div.className = 'email';
   div.innerHTML = `<b>${email.sender}</b> ${email.subject}  <div style='float: right'>${email.timestamp}<div>`;
   back_color = email.read ? "lightgrey" : "white";
   div.style.cssText = `background: ${back_color}`;
-  div.addEventListener('click', () => open_email(email));
+  div.addEventListener('click', () => open_email(email, mailbox));
   document.querySelector('#emails-view').append(div);
 }
 
-function open_email(email) {
+function open_email(email, mailbox) {
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#email-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
@@ -79,13 +79,56 @@ function open_email(email) {
       })
 
       // Populate divs with data
-      document.querySelector('#email-sender').innerHTML = email.sender;
-      document.querySelector('#email-recipients').innerHTML = email.recipients;
-      document.querySelector('#email-subject').innerHTML = email.subject;
-      document.querySelector('#email-timestamp').innerHTML = email.timestamp;
-      document.querySelector('#email-body').innerHTML = email.body;
+      document.querySelector('#email-view').innerHTML = `
+      <div>
+        <b>From:</b> ${email.sender}
+      </div>
+      <div>
+        <b>To:</b> ${email.recipients}
+      <div>
+        <b>Subject:</b> ${email.subject}
+      </div>
+      <div>
+        <b>At:</b> ${email.timestamp}
+      </div>
+      <div>
+        <button class="btn btn-sm btn-outline-primary" id="email-archive">Archive</button>
+        <button class="btn btn-sm btn-outline-primary" id="email-unarchive">Unarchive</button>
+      </div>
+      <hr>
+      <div>
+        ${email.body}
+      </div>
+      `
 
+      switch (mailbox) {
+        case 'inbox':
+          document.querySelector('#email-unarchive').style.display = 'none';
+          document.querySelector('#email-archive').addEventListener('click', () => archive_email(email, true));
+          break;
+        case 'archive':
+          document.querySelector('#email-archive').style.display = 'none';
+          document.querySelector('#email-unarchive').addEventListener('click', () => archive_email(email, false));
+          break;
+      
+        default:
+          document.querySelector('#email-archive').style.display = 'none';
+          document.querySelector('#email-unarchive').style.display = 'none';
+          break;
+      }
   });
+}
+
+function archive_email(email, value) {
+  fetch(`/emails/${email.id}`, {
+    method: 'PUT',
+    body: JSON.stringify({
+        archived: value,
+    })
+  })
+  .then(() => {
+    load_mailbox('inbox');
+  });  
 }
 
 function load_mailbox(mailbox) {
@@ -103,6 +146,8 @@ function load_mailbox(mailbox) {
   .then(response => response.json())
   .then(emails => {
     //console.log(emails);
-    emails.forEach(list_email);
+    emails.forEach(email => {
+      list_email(email, mailbox);
+    });
   })
 }
