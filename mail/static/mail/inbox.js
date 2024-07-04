@@ -51,7 +51,9 @@ function send_email() {
 function list_email(email) {
   const div = document.createElement('div');
   div.className = 'email';
-  div.innerHTML = `${email.sender}: ${email.subject} at ${email.timestamp}`;
+  div.innerHTML = `<b>${email.sender}</b> ${email.subject}  <div style='float: right'>${email.timestamp}<div>`;
+  back_color = email.read ? "lightgrey" : "white";
+  div.style.cssText = `background: ${back_color}`;
   div.addEventListener('click', open_email)
   document.querySelector('#emails-view').append(div);
 }
@@ -73,7 +75,7 @@ function load_mailbox(mailbox) {
   fetch(`/emails/${mailbox}`)
   .then(response => response.json())
   .then(emails => {
-    console.log(emails);
+    //console.log(emails);
     emails.forEach(list_email);
   })
 }
