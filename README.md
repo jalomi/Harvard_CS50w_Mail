@@ -1,4 +1,4 @@
-# Harvard_CS50w_Wiki
+# Harvard_CS50w_Mail
 
 Submission for Harvard CS50w project titled 'mail'
 
